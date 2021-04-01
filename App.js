@@ -1,46 +1,39 @@
 import React,{Component} from 'react';
 import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
+import dictionary from "./database";
 
 export default class App extends Component {
   constructor(){
     super();
     this.state={
       inputTxt:"",
-      isSearchPressed:false,
       word:"",
       definition:"",
       category:"",
     }
   }
-  searchWord=async(word)=>{
-    var searchWord=word.toLowerCase();
-    var url="https://rupinwhitehatjr.github.io/dictionary/"+searchWord+".json"
+  searchWord=async(text)=>{
+    var text=text.toLowerCase();
+    
+    try{
+      var word= dictionary[text]["word"];
+      var meaning= dictionary[text]["definition"];
+      var wordtype= dictionary[text]["lexicalCategory"];
+      this.setState({
+        word:word,
+        definition:meaning,
+        category:wordtype,
+      })
+    }catch(err){
+      this.setState({
+        inputTxt:"",
+        word:"",
+        definition:"",
+        category:""
+      })
+      alert("Sorry, word not found");
+    }
 
-    return await fetch(url)
-    .then((data)=>{
-      if(data.status===200){
-        return data.json()
-      }else{
-        return null
-      }
-    })
-    .then((response)=>{
-      var responseObj=response;
-      if(responseObj){
-        var meaning=responseObj.definitions[0].description;
-        var wordtype=responseObj.definitions[0].wordtype;
-        this.setState({
-          word:this.state.inputTxt,
-          definition:meaning,
-          category:wordtype,
-        })
-      }else{
-        this.setState({
-          word:this.state.inputTxt,
-          definiton:"Word Not Found"
-        })
-      }
-    })
   }
   render(){
     return (
@@ -53,9 +46,6 @@ export default class App extends Component {
         <TouchableOpacity style={styles.searchBtn} 
           onPress={()=>{
             this.searchWord(this.state.inputTxt);
-            this.setState({
-              isSearchPressed:true
-            })
           }}>
           <Text style={styles.searchTxt}>Search</Text>
         </TouchableOpacity>
